@@ -285,7 +285,7 @@ extension WebViewController {
         
         // Handle permissions for older iOS versions
         if let host = webView.url?.host {
-            if host.contains("dcbkyc")
+            if host.contains("idfy")
             // ||host.contains(".")
             {
                 // Handle media permission for older iOS versions

@@ -107,6 +107,36 @@ public class PartnerLibrary {
             jsonPayload: body
         )
     }
+
+    /// Checks if the user is logged in by calling GET /api/user/session.
+    /// Returns `true` if the response contains a valid user_id (non-zero) and tenant_id (non-zero).
+    public func isLoggedIn() async -> Bool {
+        do {
+            let response = try await NetworkManager.shared.makeRequest(
+                url: URL(string: ServiceNames.USER_SESSION)!,
+                method: "GET"
+            )
+
+            // Check user.user_id exists and is not 0
+            guard let user = response["user"] as? [String: Any],
+                  let userId = user["user_id"] as? Int,
+                  userId != 0 else {
+                return false
+            }
+
+            // Check role.tenant_id exists and is not 0
+            guard let role = response["role"] as? [String: Any],
+                  let tenantId = role["tenant_id"] as? Int,
+                  tenantId != 0 else {
+                return false
+            }
+
+            return true
+        } catch {
+            debugPrint("isLoggedIn check failed: \(error)")
+            return false
+        }
+    }
     
     public typealias JSON = [String: Any]
 
