@@ -81,7 +81,7 @@ public class NetworkManager {
             
             var requestHeaders = headers ?? [String: String]()
             requestHeaders["key"] = encryptedAESKey
-            requestHeaders["kid"] = kid
+            requestHeaders["encryption_kid"] = kid
             
             
             var encryptedPayload: [String: Any]? = nil

@@ -191,7 +191,22 @@ public class PartnerLibrary {
 
     
     
+    /// Determines the API base path from the module's last path segment.
+    /// Returns "/api/payless" if the last segment is "PAYLESS" (case-insensitive), otherwise "/api".
+    static func resolveApiPath(for module: String) -> String {
+        let lastSegment = module
+            .split(separator: "/")
+            .last
+            .map(String.init) ?? ""
+        return lastSegment.uppercased() == "PAYLESS" ? "/api/payless" : "/api"
+    }
+
     public func open(on viewController: UIViewController, token: String, module: String, callback: @escaping (WebViewCallback) -> Void) async throws {
+        // Resolve the API base path for this session based on the module's last path segment.
+        // A PAYLESS module (case-insensitive) uses "/api/payless"; everything else falls back to "/api".
+        // Reset on every open() call so state doesn't leak between sessions.
+        EnvManager.apiPath = Self.resolveApiPath(for: module)
+
         //        let checkLoginResponse = try await checkLogin()
         //        print("checkLoginResponse: \(checkLoginResponse)")
         //

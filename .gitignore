@@ -8,3 +8,4 @@ DerivedData/
 .netrc
 .idea/
 Example/dcb-example-ios/EnvManager.swift
+*.code-workspace

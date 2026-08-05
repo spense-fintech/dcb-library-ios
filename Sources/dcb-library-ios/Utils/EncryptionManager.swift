@@ -166,14 +166,30 @@ struct EncryptionManager {
     }
     
     private static func parseExpiryDate(_ dateString: String) -> Double? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        guard let date = dateFormatter.date(from: dateString) else {
-            return nil
+        // 1) Try ISO-8601 first, e.g. "2026-09-02T18:30:01.000Z"
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = isoFormatter.date(from: dateString) {
+            return date.timeIntervalSince1970 * 1000
         }
-        
-        return date.timeIntervalSince1970 * 1000 // Convert to milliseconds
+
+        // Some payloads omit fractional seconds, e.g. "2026-09-02T18:30:01Z"
+        let isoFormatterNoFraction = ISO8601DateFormatter()
+        isoFormatterNoFraction.formatOptions = [.withInternetDateTime]
+        if let date = isoFormatterNoFraction.date(from: dateString) {
+            return date.timeIntervalSince1970 * 1000
+        }
+
+        // 2) Fall back to the legacy format, e.g. "2026-09-02 18:30:01"
+        let legacyFormatter = DateFormatter()
+        legacyFormatter.locale = Locale(identifier: "en_US_POSIX")
+        legacyFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        if let date = legacyFormatter.date(from: dateString) {
+            return date.timeIntervalSince1970 * 1000
+        }
+
+        // 3) Total failure — return nil so the caller skips this key without crashing.
+        return nil
     }
     
     static func convertPEMStringToSecKey(_ pemString: String) throws -> SecKey {
